@@ -1,0 +1,19 @@
+{
+    "name": "spotify-social-analytics",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+    "client",
+    "server"
+    ],
+    "scripts": {
+        "dev": "concurrently  \"npm  run server\" \"npm run client\"",
+        "server": "cd server && npm run dev",
+        "client": "cd client && npm start",
+        "build": "cd client && npm run build",
+        "install-all": "npm install && cd client && npm install && cd ../server && npm install"
+    },
+    "devDependencies": {
+        "concurrency": "^8.0.0"
+    }
+}
