@@ -41,7 +41,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/spotify', spotifyRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/social', socialRoutes);
-app.use('/ap/wrapped', wrappedRoutes);
+app.use('/api/wrapped', wrappedRoutes);
 
 setupSocketHandlers(io);
 
