@@ -45,7 +45,7 @@ app.use('/ap/wrapped', wrappedRoutes);
 
 setupSocketHandlers(io);
 
-mongoose.connect(process.env.MONGODB_URL, {
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
