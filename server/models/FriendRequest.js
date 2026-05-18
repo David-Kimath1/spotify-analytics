@@ -11,5 +11,6 @@ const notificationSchema = new mongoose.Schema({
         enum: ['friend_request', 'friend_accept', 'reaction', 'wrapped_ready'],
         required: true
     },
+
     
 })
