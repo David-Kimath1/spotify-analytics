@@ -1,15 +1,28 @@
+
 const mongoose = require('mongoose');
 
-const notificationSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Type.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    type: {
-        type: String,
-        enum: ['friend_request', 'friend_accept', 'reaction', 'wrapped_ready'],
-        required: true
-    },
-    
-})
+const friendRequestSchema = new mongoose.Schema({
+  from: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  to: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'accepted', 'rejected'],
+    default: 'pending'
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+friendRequestSchema.index({ from: 1, to: 1 }, { unique: true });
+
+module.exports = mongoose.model('FriendRequest', friendRequestSchema);
