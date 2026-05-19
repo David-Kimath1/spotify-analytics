@@ -41,11 +41,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/spotify', spotifyRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/social', socialRoutes);
-app.use('/ap/wrapped', wrappedRoutes);
+app.use('/api/wrapped', wrappedRoutes);
 
 setupSocketHandlers(io);
 
-mongoose.connect(process.env.MONGODB_URL, {
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
