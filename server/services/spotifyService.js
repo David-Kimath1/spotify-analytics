@@ -93,5 +93,4 @@ class SpotifyService {
     return this.makeSpotifyRequest(userId, '/me');
   }
 }
-
 module.exports = new SpotifyService();
