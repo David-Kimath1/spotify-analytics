@@ -7,7 +7,7 @@ const User = require('../models/User');
 
 const SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
-const SCOPE = 'user-read-private user-read-email user-read-recently-played user-top-read user-read-currently-playing';
+const SCOPE = 'user-read-private user-read-email user-read-recently-played user-top-read user-read-currently-playing playlist-modify-public playlist-modify-private';
 
 router.get('/login', (req, res) => {
   const state = Math.random().toString(36).substring(7);
@@ -40,7 +40,6 @@ router.post('/callback', async (req, res) => {
     
     const { access_token, refresh_token, expires_in } = tokenResponse.data;
     
-    // Get user profile from Spotify
     const userResponse = await axios.get('https://api.spotify.com/v1/me', {
       headers: { 'Authorization': `Bearer ${access_token}` }
     });
@@ -69,7 +68,6 @@ router.post('/callback', async (req, res) => {
     
     await user.save();
     
-    // Generate JWT
     const jwtToken = jwt.sign(
       { userId: user._id, spotifyId: user.spotifyId },
       process.env.JWT_SECRET,

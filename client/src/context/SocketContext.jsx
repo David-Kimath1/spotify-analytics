@@ -7,7 +7,7 @@ const SocketContext = createContext();
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }) => {
-  const { token, user } = useAuth();
+  const { user, token } = useAuth();
   const [socket, setSocket] = useState(null);
   const [currentPlaying, setCurrentPlaying] = useState(null);
   const [friendActivity, setFriendActivity] = useState([]);
@@ -40,11 +40,6 @@ export const SocketProvider = ({ children }) => {
       setOnlineFriends(prev => prev.filter(id => id !== userId));
     });
 
-    socketInstance.on('new_reaction', (reaction) => {
-      // Handle new reaction notification
-      console.log('New reaction:', reaction);
-    });
-
     setSocket(socketInstance);
 
     return () => {
@@ -58,20 +53,13 @@ export const SocketProvider = ({ children }) => {
     }
   };
 
-  const subscribeToFriendActivity = (friendIds) => {
-    if (socket && friendIds.length) {
-      socket.emit('subscribe_friend_activity', { friendIds });
-    }
-  };
-
   return (
     <SocketContext.Provider value={{
       socket,
       currentPlaying,
       friendActivity,
       onlineFriends,
-      sendReaction,
-      subscribeToFriendActivity
+      sendReaction
     }}>
       {children}
     </SocketContext.Provider>

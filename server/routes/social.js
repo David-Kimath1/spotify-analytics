@@ -3,8 +3,6 @@ const router = express.Router();
 const authenticateToken = require('../middleware/auth');
 const User = require('../models/User');
 const FriendRequest = require('../models/FriendRequest');
-const Notification = require('../models/Notification');
-const ListeningActivity = require('../models/ListeningActivity');
 
 // Send friend request
 router.post('/friend-request', authenticateToken, async (req, res) => {
@@ -38,18 +36,6 @@ router.post('/friend-request', authenticateToken, async (req, res) => {
     
     await friendRequest.save();
     
-    // Create notification
-    const fromUser = await User.findById(req.userId);
-    await Notification.create({
-      userId: toUserId,
-      type: 'friend_request',
-      content: {
-        title: 'New Friend Request',
-        message: `${fromUser.displayName} sent you a friend request`,
-        data: { fromUserId: req.userId, fromUserName: fromUser.displayName }
-      }
-    });
-    
     res.json({ success: true, request: friendRequest });
   } catch (error) {
     console.error('Friend request error:', error);
@@ -77,18 +63,6 @@ router.post('/accept-request/:requestId', authenticateToken, async (req, res) =>
       $addToSet: { friends: req.userId }
     });
     
-    // Create notification for the sender
-    const currentUser = await User.findById(req.userId);
-    await Notification.create({
-      userId: request.from,
-      type: 'friend_accept',
-      content: {
-        title: 'Friend Request Accepted',
-        message: `${currentUser.displayName} accepted your friend request`,
-        data: { userId: req.userId, userName: currentUser.displayName }
-      }
-    });
-    
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to accept request' });
@@ -109,47 +83,13 @@ router.get('/friend-requests', authenticateToken, async (req, res) => {
   }
 });
 
-// Get friends list with activity
+// Get friends list
 router.get('/friends', authenticateToken, async (req, res) => {
   try {
-    const user = await User.findById(req.userId).populate('friends', 'displayName profileImage spotifyId privacySettings');
-    
-    const friendsWithActivity = await Promise.all(
-      user.friends.map(async (friend) => {
-        const lastActivity = await ListeningActivity.findOne({ userId: friend._id })
-          .sort({ playedAt: -1 })
-          .limit(1);
-        
-        return {
-          ...friend.toObject(),
-          lastActivity: lastActivity || null
-        };
-      })
-    );
-    
-    res.json(friendsWithActivity);
+    const user = await User.findById(req.userId).populate('friends', 'displayName profileImage spotifyId');
+    res.json(user.friends);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch friends' });
-  }
-});
-
-// Get friend feed
-router.get('/friend-feed', authenticateToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.userId).populate('friends');
-    const friendIds = user.friends.map(f => f._id);
-    
-    const activities = await ListeningActivity.find({
-      userId: { $in: friendIds },
-      playedAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-    })
-      .sort({ playedAt: -1 })
-      .limit(100)
-      .populate('userId', 'displayName profileImage');
-    
-    res.json(activities);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch friend feed' });
   }
 });
 
