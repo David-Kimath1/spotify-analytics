@@ -48,9 +48,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/social', socialRoutes);
 app.use('/api/wrapped', wrappedRoutes);
 app.use('/api/badges', require('./routes/badges'));
-app.use('/api/playlist', require('./routes/playlist'));
 app.use('/api/badges', require('./routes/badges'));
-app.use('/api/playlist', require('./routes/playlist'));
 
 // Health check
 app.get('/health', (req, res) => {
