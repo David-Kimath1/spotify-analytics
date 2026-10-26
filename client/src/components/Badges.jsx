@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import { Award, Share2, Trophy } from 'lucide-react';
+import { Activity, Award, Compass, Crown, Flame, Moon, Share2, Sun, Trophy } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000/api';
+const badgeIcons = { moon: Moon, sunrise: Sun, streak: Flame, fan: Crown, explorer: Compass, marathon: Activity };
 
 const Badges = () => {
   const [badges, setBadges] = useState([]);
@@ -26,8 +27,8 @@ const Badges = () => {
   };
 
   const shareBadges = () => {
-    const badgeText = badges.map(b => `${b.icon} ${b.name}`).join('\n');
-    const shareText = `🎵 My Spotify Achievements!\n\n${badgeText}\n\nMade with Spotify Analytics App`;
+    const badgeText = badges.map(b => b.name).join('\n');
+    const shareText = `My listening achievements\n\n${badgeText}\n\nMade with Sonora`;
     
     if (navigator.share) {
       navigator.share({
@@ -87,7 +88,7 @@ const Badges = () => {
             onClick={() => toast.success(`${badge.name}: ${badge.description}`)}
           >
             <div className="flex items-center space-x-3">
-              <span className="text-3xl">{badge.icon}</span>
+              {(() => { const Icon = badgeIcons[badge.icon] || Award; return <Icon className="w-7 h-7" aria-hidden="true" />; })()}
               <div>
                 <h4 className="font-semibold">{badge.name}</h4>
                 <p className="text-xs opacity-90">{badge.description}</p>

@@ -3,35 +3,49 @@ const router = express.Router();
 const querystring = require('querystring');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/User');
 
 const SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
-const SCOPE = 'user-read-private user-read-email user-read-recently-played user-top-read user-read-currently-playing playlist-modify-public playlist-modify-private';
+const SCOPE = 'user-read-private user-read-email user-read-recently-played user-top-read user-read-currently-playing user-library-read playlist-modify-public playlist-modify-private';
+const getClientUrl = () => (process.env.CLIENT_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
 router.get('/login', (req, res) => {
-  const state = Math.random().toString(36).substring(7);
+  const state = crypto.randomBytes(32).toString('hex');
+  res.cookie('spotify_oauth_state', state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 10 * 60 * 1000,
+    path: '/api/auth'
+  });
   const params = {
     response_type: 'code',
     client_id: process.env.SPOTIFY_CLIENT_ID,
     scope: SCOPE,
-    redirect_uri: `${process.env.CLIENT_URL}/auth/callback`,
+    redirect_uri: `${getClientUrl()}/auth/callback`,
     state: state
   };
   
   const authUrl = `${SPOTIFY_AUTH_URL}?${querystring.stringify(params)}`;
-  res.json({ url: authUrl });
+  res.redirect(authUrl);
 });
 
 router.post('/callback', async (req, res) => {
-  const { code } = req.body;
+  const { code, state } = req.body;
+  const cookies = Object.fromEntries((req.headers.cookie || '').split(';').map(part => part.trim().split('=').map(decodeURIComponent)).filter(parts => parts.length >= 2));
+  if (!code || !state || !cookies.spotify_oauth_state || state !== cookies.spotify_oauth_state) {
+    return res.status(400).json({ error: 'Spotify authorization expired or could not be verified. Please reconnect.' });
+  }
+  res.clearCookie('spotify_oauth_state', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/api/auth' });
   
   try {
     const tokenResponse = await axios.post(SPOTIFY_TOKEN_URL, 
       querystring.stringify({
         grant_type: 'authorization_code',
         code: code,
-        redirect_uri: `${process.env.CLIENT_URL}/auth/callback`,
+        redirect_uri: `${getClientUrl()}/auth/callback`,
         client_id: process.env.SPOTIFY_CLIENT_ID,
         client_secret: process.env.SPOTIFY_CLIENT_SECRET
       }),
@@ -53,7 +67,7 @@ router.post('/callback', async (req, res) => {
         spotifyId: spotifyUser.id,
         email: spotifyUser.email,
         displayName: spotifyUser.display_name,
-        profileImage: spotifyUser.images[0]?.url,
+      profileImage: spotifyUser.images?.[0]?.url,
         spotifyAccessToken: access_token,
         spotifyRefreshToken: refresh_token,
         tokenExpiresAt: new Date(Date.now() + expires_in * 1000)
@@ -63,7 +77,7 @@ router.post('/callback', async (req, res) => {
       user.spotifyRefreshToken = refresh_token;
       user.tokenExpiresAt = new Date(Date.now() + expires_in * 1000);
       if (spotifyUser.display_name) user.displayName = spotifyUser.display_name;
-      if (spotifyUser.images[0]?.url) user.profileImage = spotifyUser.images[0].url;
+      if (spotifyUser.images?.[0]?.url) user.profileImage = spotifyUser.images[0].url;
     }
     
     await user.save();
@@ -76,7 +90,7 @@ router.post('/callback', async (req, res) => {
     
     res.json({ token: jwtToken, user: { id: user._id, displayName: user.displayName, profileImage: user.profileImage } });
   } catch (error) {
-    console.error('Auth callback error:', error);
+    console.error('Spotify authentication failed:', error.response?.status || error.message);
     res.status(500).json({ error: 'Authentication failed' });
   }
 });

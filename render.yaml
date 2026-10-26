@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: sonora-analytics
+    runtime: node
+    buildCommand: npm install --include=dev && npm --prefix client install --include=dev && npm --prefix server install --include=dev && npm --prefix client run build
+    startCommand: npm --prefix server start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REACT_APP_API_URL
+        value: /api
+      - key: MONGODB_URI
+        sync: false
+      - key: SPOTIFY_CLIENT_ID
+        sync: false
+      - key: SPOTIFY_CLIENT_SECRET
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true

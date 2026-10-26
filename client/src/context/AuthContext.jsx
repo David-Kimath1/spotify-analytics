@@ -1,12 +1,10 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import api, { API_URL } from '../lib/api';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -15,7 +13,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       verifyToken();
     } else {
       setLoading(false);
@@ -24,7 +22,7 @@ export const AuthProvider = ({ children }) => {
 
   const verifyToken = async () => {
     try {
-      const response = await axios.get(`${API_URL}/auth/verify`);
+      const response = await api.get('/auth/verify');
       if (response.data.valid) {
         setUser(response.data.user);
       } else {
@@ -37,33 +35,33 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = () => {
+  const login = useCallback(() => {
     window.location.href = `${API_URL}/auth/login`;
-  };
+  }, []);
 
-  const handleAuthCallback = async (code) => {
+  const handleAuthCallback = useCallback(async (code, state) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/callback`, { code });
+      const response = await api.post('/auth/callback', { code, state });
       const { token: newToken, user: userData } = response.data;
       localStorage.setItem('token', newToken);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
       setToken(newToken);
       setUser(userData);
       toast.success('Successfully logged in!');
       return true;
     } catch (error) {
-      toast.error('Login failed');
+      toast.error(error.response?.data?.error || 'Could not reach the local API. Check that both servers are running, then try again.');
       return false;
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+    delete api.defaults.headers.common['Authorization'];
     setToken(null);
     setUser(null);
     toast.success('Logged out');
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, handleAuthCallback }}>

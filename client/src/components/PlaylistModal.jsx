@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Loader, Music, Zap, Heart, Coffee, Brain, CheckCircle, ExternalLink } from 'lucide-react';
+import { X, Loader, Music, Zap, Heart, Coffee, Brain, Check, CheckCircle, ExternalLink, Sparkles } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -54,14 +54,14 @@ const PlaylistModal = ({ isOpen, onClose }) => {
           {/* Sync to Spotify Toggle */}
           <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
             <div>
-              <p className="font-semibold">📀 Sync to Spotify</p>
+              <p className="font-semibold flex items-center gap-2"><Music className="w-4 h-4" />Sync to Spotify</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">Save this playlist directly to your Spotify account</p>
             </div>
             <button
               onClick={() => setSyncToSpotify(!syncToSpotify)}
               className={`px-4 py-2 rounded-lg transition ${syncToSpotify ? 'bg-green-500 text-white' : 'bg-gray-300 dark:bg-gray-600'}`}
             >
-              {syncToSpotify ? 'ON ✓' : 'OFF'}
+              {syncToSpotify ? <span className="flex items-center gap-1"><Check className="w-4 h-4" />ON</span> : 'OFF'}
             </button>
           </div>
 
@@ -77,7 +77,7 @@ const PlaylistModal = ({ isOpen, onClose }) => {
                 <div className="flex items-center space-x-3">
                   <Zap className="w-6 h-6" />
                   <div>
-                    <p className="font-bold">🎯 Smart Mix</p>
+                    <p className="font-bold flex items-center gap-2"><Sparkles className="w-4 h-4" />Smart Mix</p>
                     <p className="text-sm opacity-90">Your top tracks + similar songs based on your taste</p>
                   </div>
                 </div>
@@ -118,7 +118,7 @@ const PlaylistModal = ({ isOpen, onClose }) => {
               <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                 <h3 className="font-bold text-lg">{playlist.name}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">{playlist.description}</p>
-                <p className="text-sm mt-2">🎵 {playlist.tracks?.length || 0} songs</p>
+                <p className="text-sm mt-2 flex items-center gap-2"><Music className="w-4 h-4" />{playlist.tracks?.length || 0} songs</p>
                 
                 {playlist.syncedToSpotify && playlist.spotifyUrl && (
                   <a 

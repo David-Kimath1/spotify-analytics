@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Music, Users, BarChart3, TrendingUp } from 'lucide-react';
+import { ArrowRight, BarChart3, Clock, LockKeyhole, Music, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Login = () => {
   const { user, login, handleAuthCallback } = useAuth();
   const navigate = useNavigate();
+  const callbackStarted = useRef(false);
 
   useEffect(() => {
     if (user) {
@@ -16,80 +17,50 @@ const Login = () => {
     // Handle OAuth callback
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
-    if (code) {
-      handleAuthCallback(code).then(success => {
-        if (success) navigate('/');
+    const state = urlParams.get('state');
+    if (code && !callbackStarted.current) {
+      callbackStarted.current = true;
+      handleAuthCallback(code, state).then(success => {
+        if (success) navigate('/', { replace: true });
       });
     }
   }, [user, navigate, handleAuthCallback]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-900 to-black flex items-center justify-center p-4">
-      <div className="max-w-6xl w-full">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left side - Features */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-white space-y-8"
-          >
-            <div className="space-y-4">
-              <h1 className="text-5xl font-bold">Spotify Social Analytics</h1>
-              <p className="text-xl text-gray-300">
-                Discover your music taste, track your listening habits, and connect with friends
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <Feature icon={<Music />} text="Track your listening history and discover insights" />
-              <Feature icon={<BarChart3 />} text="Detailed analytics of your music taste" />
-              <Feature icon={<Users />} text="See what your friends are listening to in real-time" />
-              <Feature icon={<TrendingUp />} text="Get weekly and monthly wrapped summaries" />
-            </div>
-          </motion.div>
-
-          {/* Right side - Login Card */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8"
-          >
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full mb-4">
-                <Music className="w-10 h-10 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
-                Sign in to continue to your music dashboard
-              </p>
-            </div>
-
-            <button
-              onClick={login}
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
-            >
-              <Music className="w-5 h-5" />
-              <span>Continue with Spotify</span>
-            </button>
-
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-6">
-              By continuing, you agree to our Terms of Service and Privacy Policy
-            </p>
-          </motion.div>
+    <main className="login-screen">
+      <motion.section className="login-story" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+        <div className="brand-lockup"><span className="brand-mark"><Music size={18} /></span><span>SONORA</span></div>
+        <div className="login-copy">
+          <p className="eyebrow">YOUR LISTENING, IN FOCUS</p>
+          <h1>Understand the music<br />that moves you.</h1>
+          <p className="login-lede">A considered view of your listening history, habits and discoveries, built from your Spotify data.</p>
+          <div className="login-feature-list">
+            <Feature icon={<BarChart3 />} text="Personal analytics with clear data provenance" />
+            <Feature icon={<Clock />} text="Bring your Extended Streaming History" />
+            <Feature icon={<ShieldCheck />} text="Your Spotify connection stays yours" />
+          </div>
         </div>
-      </div>
-    </div>
+        <p className="login-footnote">Independent listening analytics · Powered by your account</p>
+      </motion.section>
+      <motion.section className="login-panel" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.45 }}>
+        <div className="login-panel-top"><span className="status-dot" /> SECURE CONNECTION</div>
+        <div className="login-panel-body">
+          <span className="login-icon"><Music size={22} /></span>
+          <p className="eyebrow">WELCOME TO SONORA</p>
+          <h2>Connect your Spotify account</h2>
+          <p>Sign in to see your real listening insights. Your dashboard starts with recent Spotify history and grows as you listen or import your archive.</p>
+          <button onClick={login} className="spotify-button"><Music size={18} /><span>Continue with Spotify</span><ArrowRight size={17} /></button>
+          <div className="login-security"><LockKeyhole size={14} /><span>Authentication is handled securely by Spotify OAuth.</span></div>
+        </div>
+      </motion.section>
+    </main>
   );
 };
 
 const Feature = ({ icon, text }) => (
-  <div className="flex items-center space-x-3">
-    <div className="w-10 h-10 bg-green-500 bg-opacity-20 rounded-lg flex items-center justify-center">
-      {icon}
-    </div>
-    <span className="text-gray-200">{text}</span>
+  <div className="login-feature">
+    <span className="login-feature-icon">{icon}</span>
+    <span>{text}</span>
   </div>
 );
 

@@ -20,7 +20,11 @@ const authenticateToken = async (req, res, next) => {
     req.userId = user._id;
     next();
   } catch (error) {
-    return res.status(403).json({ error: 'Invalid or expired token' });
+    if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+    console.error('Authentication lookup failed:', error);
+    return res.status(500).json({ error: 'Unable to verify the current session' });
   }
 };
 

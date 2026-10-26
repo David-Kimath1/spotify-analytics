@@ -26,22 +26,22 @@ class BadgesService {
     const uniqueArtists = Object.keys(artistCount).length;
     
     if (nightPlays > 10) {
-      badges.push({ name: '🌙 Night Owl', description: 'Listened after midnight 10+ times', icon: '🌙' });
+      badges.push({ name: 'Night Owl', description: 'Listened after midnight 10+ times', icon: 'moon' });
     }
     if (earlyPlays > 10) {
-      badges.push({ name: '☀️ Early Bird', description: 'Early morning listener', icon: '☀️' });
+      badges.push({ name: 'Early Bird', description: 'Early morning listener', icon: 'sunrise' });
     }
     if (uniqueDays.size >= 7) {
-      badges.push({ name: '🔥 Hot Streak', description: `${uniqueDays.size} day streak`, icon: '🔥' });
+      badges.push({ name: 'Consistent Listener', description: `${uniqueDays.size} active listening days`, icon: 'streak' });
     }
     if (topArtist && topArtist[1] >= 50) {
-      badges.push({ name: '👑 Top Fan', description: `${topArtist[0]} - ${topArtist[1]} plays`, icon: '👑' });
+      badges.push({ name: 'Top Fan', description: `${topArtist[0]} - ${topArtist[1]} plays`, icon: 'fan' });
     }
     if (uniqueArtists >= 20) {
-      badges.push({ name: '🎨 Explorer', description: `${uniqueArtists} different artists`, icon: '🎨' });
+      badges.push({ name: 'Explorer', description: `${uniqueArtists} different artists`, icon: 'explorer' });
     }
     if (totalMinutes >= 1000) {
-      badges.push({ name: '🏃 Marathon', description: `${totalMinutes} minutes total`, icon: '🏃' });
+      badges.push({ name: 'Marathon', description: `${totalMinutes} minutes total`, icon: 'marathon' });
     }
     
     return badges;
