@@ -9,7 +9,12 @@ const User = require('../models/User');
 const SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const SCOPE = 'user-read-private user-read-email user-read-recently-played user-top-read user-read-currently-playing user-library-read playlist-modify-public playlist-modify-private';
-const getClientUrl = () => (process.env.CLIENT_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000').replace(/\/+$/, '');
+const getClientUrl = () => (
+  process.env.CLIENT_URL
+  || process.env.RENDER_EXTERNAL_URL
+  || (process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`)
+  || 'http://localhost:3000'
+).replace(/\/+$/, '');
 
 router.get('/login', (req, res) => {
   const state = crypto.randomBytes(32).toString('hex');

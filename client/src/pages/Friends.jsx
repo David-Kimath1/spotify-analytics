@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { UserPlus, UserCheck, UserX, Search, Music, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const Friends = () => {
   const { user } = useAuth();
@@ -26,7 +24,7 @@ const Friends = () => {
 
   const fetchFriends = async () => {
     try {
-      const response = await axios.get(`${API_URL}/social/friends`);
+      const response = await api.get('/social/friends');
       setFriends(response.data);
     } catch (error) {
       console.error('Failed to fetch friends:', error);
@@ -35,7 +33,7 @@ const Friends = () => {
 
   const fetchFriendRequests = async () => {
     try {
-      const response = await axios.get(`${API_URL}/social/friend-requests`);
+      const response = await api.get('/social/friend-requests');
       setFriendRequests(response.data);
     } catch (error) {
       console.error('Failed to fetch requests:', error);
@@ -44,7 +42,7 @@ const Friends = () => {
 
   const fetchFriendFeed = async () => {
     try {
-      const response = await axios.get(`${API_URL}/social/friend-feed`);
+      const response = await api.get('/social/friend-feed');
       setFriendFeed(response.data);
     } catch (error) {
       console.error('Failed to fetch feed:', error);
@@ -54,7 +52,7 @@ const Friends = () => {
   const searchUsers = async () => {
     if (!searchQuery.trim()) return;
     try {
-      const response = await axios.get(`${API_URL}/social/search-users?query=${searchQuery}`);
+      const response = await api.get('/social/search-users', { params: { query: searchQuery } });
       setSearchResults(response.data);
     } catch (error) {
       console.error('Search failed:', error);
@@ -63,7 +61,7 @@ const Friends = () => {
 
   const sendFriendRequest = async (toUserId) => {
     try {
-      await axios.post(`${API_URL}/social/friend-request`, { toUserId });
+      await api.post('/social/friend-request', { toUserId });
       toast.success('Friend request sent!');
       setSearchResults(searchResults.filter(u => u._id !== toUserId));
     } catch (error) {
@@ -73,7 +71,7 @@ const Friends = () => {
 
   const acceptRequest = async (requestId) => {
     try {
-      await axios.post(`${API_URL}/social/accept-request/${requestId}`);
+      await api.post(`/social/accept-request/${requestId}`);
       toast.success('Friend request accepted!');
       fetchFriends();
       fetchFriendRequests();

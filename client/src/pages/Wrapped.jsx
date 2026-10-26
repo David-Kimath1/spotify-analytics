@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import api from '../lib/api';
 import { Calendar, Download, Share2, TrendingUp, Music, Headphones, Award, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000/api';
 
 const Wrapped = () => {
   const [period, setPeriod] = useState('weekly');
@@ -18,7 +16,7 @@ const Wrapped = () => {
   const fetchRecap = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/wrapped/recap/${period}?preview=true`);
+      const response = await api.get(`/wrapped/recap/${period}`, { params: { preview: true } });
       setRecap(response.data);
     } catch (error) {
       console.error('Failed to fetch recap:', error);

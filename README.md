@@ -28,18 +28,24 @@ Sonora is a dark-first analytics dashboard built on the existing React, Express,
 
    The client runs on port 3000 and the API on port 5000. You can also start each side separately with `npm run client` and `npm run server`.
 
-## Install as an app and get a public URL
+## Deploy to Vercel and install as a PWA
 
-Sonora includes a web app manifest and a service worker. In a production build, it caches only the app shell and static assets; private analytics API responses are never cached. On Edge, use **Settings and more → Apps → Install this site as an app**. In Settings, **Copy app URL** copies the current site's root address. A localhost address works only on this computer.
+The Vercel configuration builds the React client as static assets and runs the Express API as a serverless function. MongoDB Atlas stores listening records between requests and deployments. Sonora includes a web app manifest and a service worker; it caches only the app shell and static assets, never private analytics API responses.
 
-To create a shareable public URL, this repository includes a Render Blueprint in `render.yaml`:
+1. Push the repository to GitHub and create a MongoDB Atlas database.
+2. In Vercel, import the GitHub repository as a project. Keep the repository root as the project root so `vercel.json` is used.
+3. Add these environment variables in Vercel for Production (and Preview too, if you plan to use preview deployments):
+   - `MONGODB_URI`: the Atlas connection string, with a database user and database name.
+   - `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`: credentials from your Spotify Developer app.
+   - `JWT_SECRET`: a long, random secret generated for Sonora.
+   - `CLIENT_URL`: optional; set this to the final production HTTPS URL if you have assigned a custom domain. Otherwise, Sonora uses Vercel's production project URL.
+4. In MongoDB Atlas, allow network connections from Vercel. Vercel serverless outbound addresses can vary; use Atlas's recommended network-access configuration for your deployment rather than assuming localhost.
+5. Deploy the project. Add `https://<your-production-domain>/auth/callback` to the Spotify Developer app's allowed Redirect URIs. Use the stable production domain, not a temporary preview URL.
+6. Open the deployed HTTPS URL and sign in. On Edge, choose **Settings and more → Apps → Install this site as an app**; on mobile, use **Add to Home Screen**. **Settings → Copy app URL** copies the deployed address.
 
-1. Push the repository to GitHub and create a MongoDB Atlas database. Add the deployed service's network access as required by your Atlas project.
-2. In Render, create a new Blueprint from the GitHub repository and provide `MONGODB_URI`, `SPOTIFY_CLIENT_ID`, and `SPOTIFY_CLIENT_SECRET` when prompted. The Blueprint generates a `JWT_SECRET` and builds the React client with the API on the same origin.
-3. After Render creates the service, copy its `https://…onrender.com` address and add `<service-url>/auth/callback` to the allowed redirect URIs in your Spotify Developer Dashboard. The app uses Render's service URL for OAuth unless `CLIENT_URL` is explicitly set.
-4. Open the public URL, sign in again, then use **Settings → Copy app URL** to copy the shareable address. The browser's Apps menu can install the HTTPS deployment as a PWA.
+Vercel functions do not run the local ten-minute background sync job or persistent Socket.IO connections. Use **Sync data** in the dashboard to capture recent plays; imported history and analytics remain stored in MongoDB Atlas. The PWA requires an internet connection for sign-in, Spotify sync, and analytics.
 
-Render's [Node deployment guide](https://render.com/docs/deploy-node-express-app) and [Blueprint reference](https://render.com/docs/blueprint-spec) describe the deployment and environment setup.
+The repository also retains a Render Blueprint (`render.yaml`) for deployments that use a continuously running Express server.
 
 ## Data notes
 

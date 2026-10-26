@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../lib/api';
 import { Music, Clock, Headphones, Calendar, Edit2, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -27,9 +25,9 @@ const Profile = () => {
   const fetchProfileData = async () => {
     try {
       const [statsRes, artistsRes, tracksRes] = await Promise.all([
-        axios.get(`${API_URL}/analytics/stats`),
-        axios.get(`${API_URL}/analytics/top-artists?limit=5`),
-        axios.get(`${API_URL}/analytics/top-tracks?limit=5`)
+        api.get('/analytics/stats'),
+        api.get('/analytics/top-artists', { params: { limit: 5 } }),
+        api.get('/analytics/top-tracks', { params: { limit: 5 } })
       ]);
       setStats(statsRes.data);
       setTopArtists(artistsRes.data);
